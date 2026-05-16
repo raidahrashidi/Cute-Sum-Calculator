@@ -2,11 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+
   <title>Raeda Cute Calculator</title>
 
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      touch-action: manipulation;
+    }
 
     body {
       margin: 0;
@@ -14,7 +26,7 @@
       background: linear-gradient(180deg, #fff1f7, #f7f3ff);
       color: #333;
       padding: 14px;
-      padding-bottom: 260px;
+      padding-bottom: 285px;
     }
 
     .app {
@@ -106,11 +118,13 @@
       resize: vertical;
       background: #fffafd;
       color: #444;
+      line-height: 1.45;
     }
 
-    textarea:focus {
-      border-color: #ec4899;
-      box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.15);
+    textarea:focus,
+    textarea.active-input {
+      border-color: #d9468c;
+      box-shadow: 0 0 0 3px rgba(217, 70, 140, 0.18);
     }
 
     .hint {
@@ -153,6 +167,7 @@
       font-size: 16px;
       font-weight: bold;
       margin-bottom: 12px;
+      cursor: pointer;
     }
 
     .footer {
@@ -183,7 +198,28 @@
 
     .keypad-inner {
       max-width: 480px;
-      margin: auto;
+      margin-left: auto;
+      margin-right: auto;
+      transition: 0.2s ease;
+    }
+
+    .popup-keypad.small .keypad-inner {
+      max-width: 335px;
+    }
+
+    .popup-keypad.left .keypad-inner {
+      margin-left: 0;
+      margin-right: auto;
+    }
+
+    .popup-keypad.center .keypad-inner {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .popup-keypad.right .keypad-inner {
+      margin-left: auto;
+      margin-right: 0;
     }
 
     .keypad-top {
@@ -203,6 +239,30 @@
       padding: 8px 14px;
       border-radius: 999px;
       font-weight: bold;
+      cursor: pointer;
+    }
+
+    .keypad-controls {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+
+    .keypad-controls button {
+      border: none;
+      background: #fff1f7;
+      color: #be185d;
+      padding: 8px 4px;
+      border-radius: 999px;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .keypad-controls button.active-control {
+      background: #d9468c;
+      color: white;
     }
 
     .keypad-grid {
@@ -220,11 +280,21 @@
       background: #ffe4f1;
       color: #be185d;
       box-shadow: 0 4px 9px rgba(217, 70, 140, 0.14);
+      cursor: pointer;
+      user-select: none;
     }
 
-    .key:active {
+    .popup-keypad.small .key {
+      padding: 12px 0;
+      font-size: 18px;
+      border-radius: 15px;
+    }
+
+    .key:active,
+    .done-btn:active,
+    .clear-all:active,
+    .keypad-controls button:active {
       transform: scale(0.96);
-      background: #fbcfe8;
     }
 
     .key.special {
@@ -251,7 +321,6 @@
 
 <body>
   <div class="app">
-
     <div class="header">
       <h1>🧮 Cute Sum Calculator</h1>
       <p>For Nabilah & Najihah ✨</p>
@@ -272,14 +341,20 @@
     <button class="clear-all" onclick="clearAll()">Clear All 🧹</button>
 
     <div class="footer">crafted with 🤍 by raeda</div>
-
   </div>
 
-  <div class="popup-keypad" id="popupKeypad">
+  <div class="popup-keypad center" id="popupKeypad">
     <div class="keypad-inner">
       <div class="keypad-top">
         <span id="activeLabel">Page 1</span>
         <button class="done-btn" onclick="hideKeypad()">Done ✨</button>
+      </div>
+
+      <div class="keypad-controls">
+        <button id="sizeBtn" onclick="toggleKeypadSize()">Normal</button>
+        <button id="leftBtn" onclick="setKeypadSide('left')">Left</button>
+        <button id="centerBtn" class="active-control" onclick="setKeypadSide('center')">Center</button>
+        <button id="rightBtn" onclick="setKeypadSide('right')">Right</button>
       </div>
 
       <div class="keypad-grid">
@@ -315,6 +390,7 @@
 
     let activePage = 0;
     let textareas = [];
+    let keypadSmall = false;
 
     function saveData() {
       const data = textareas.map(t => t.value);
@@ -324,6 +400,7 @@
     function loadData() {
       const saved = localStorage.getItem("raedaCalculatorData");
       if (!saved) return Array(6).fill("");
+
       try {
         const data = JSON.parse(saved);
         return Array.isArray(data) ? data : Array(6).fill("");
@@ -332,9 +409,44 @@
       }
     }
 
+    function saveKeypadSettings() {
+      const settings = {
+        small: keypadSmall,
+        side: getCurrentSide()
+      };
+
+      localStorage.setItem("raedaKeypadSettings", JSON.stringify(settings));
+    }
+
+    function loadKeypadSettings() {
+      const saved = localStorage.getItem("raedaKeypadSettings");
+      if (!saved) return;
+
+      try {
+        const settings = JSON.parse(saved);
+
+        if (settings.small) {
+          keypadSmall = true;
+          popupKeypad.classList.add("small");
+          document.getElementById("sizeBtn").textContent = "Small";
+        }
+
+        if (settings.side) {
+          setKeypadSide(settings.side, false);
+        }
+      } catch {}
+    }
+
+    function getCurrentSide() {
+      if (popupKeypad.classList.contains("left")) return "left";
+      if (popupKeypad.classList.contains("right")) return "right";
+      return "center";
+    }
+
     function calculateText(text) {
       text = text.replace(/,/g, "");
       const numbers = text.match(/-?\d+(\.\d+)?/g);
+
       if (!numbers) return 0;
 
       return numbers.reduce((sum, num) => sum + Number(num), 0);
@@ -363,6 +475,7 @@
           <span>Page ${i + 1}</span>
           <strong>${formatRM(total)}</strong>
         `;
+
         summaryList.appendChild(row);
       }
 
@@ -373,49 +486,116 @@
     function showKeypad(index) {
       activePage = index;
       activeLabel.textContent = "Page " + (index + 1);
+
+      textareas.forEach(t => t.classList.remove("active-input"));
+      textareas[index].classList.add("active-input");
+
       popupKeypad.classList.add("show");
-      textareas[index].focus();
+
+      setTimeout(() => {
+        textareas[index].focus();
+      }, 50);
     }
 
     function hideKeypad() {
       popupKeypad.classList.remove("show");
-      if (textareas[activePage]) textareas[activePage].blur();
+      textareas.forEach(t => t.classList.remove("active-input"));
+    }
+
+    function toggleKeypadSize() {
+      keypadSmall = !keypadSmall;
+      const sizeBtn = document.getElementById("sizeBtn");
+
+      if (keypadSmall) {
+        popupKeypad.classList.add("small");
+        sizeBtn.textContent = "Small";
+      } else {
+        popupKeypad.classList.remove("small");
+        sizeBtn.textContent = "Normal";
+      }
+
+      saveKeypadSettings();
+      keepFocus();
+    }
+
+    function setKeypadSide(side, shouldSave = true) {
+      popupKeypad.classList.remove("left", "center", "right");
+      popupKeypad.classList.add(side);
+
+      document.getElementById("leftBtn").classList.remove("active-control");
+      document.getElementById("centerBtn").classList.remove("active-control");
+      document.getElementById("rightBtn").classList.remove("active-control");
+
+      document.getElementById(side + "Btn").classList.add("active-control");
+
+      if (shouldSave) saveKeypadSettings();
+      keepFocus();
+    }
+
+    function keepFocus() {
+      const textarea = textareas[activePage];
+
+      if (!textarea) return;
+
+      const pos = textarea.selectionStart;
+
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(pos, pos);
+      }, 20);
     }
 
     function insertAtCursor(textarea, text) {
+      textarea.focus();
+
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
+
       const before = textarea.value.substring(0, start);
       const after = textarea.value.substring(end);
 
       textarea.value = before + text + after;
 
       const newPosition = start + text.length;
+      textarea.focus();
       textarea.setSelectionRange(newPosition, newPosition);
+    }
+
+    function deleteAtCursor(textarea) {
+      textarea.focus();
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+
+      if (start !== end) {
+        const before = textarea.value.substring(0, start);
+        const after = textarea.value.substring(end);
+
+        textarea.value = before + after;
+        textarea.focus();
+        textarea.setSelectionRange(start, start);
+      } else if (start > 0) {
+        const before = textarea.value.substring(0, start - 1);
+        const after = textarea.value.substring(start);
+
+        textarea.value = before + after;
+        textarea.focus();
+        textarea.setSelectionRange(start - 1, start - 1);
+      }
     }
 
     function pressKey(key) {
       const textarea = textareas[activePage];
 
-      if (key === "back") {
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
+      if (!textarea) return;
 
-        if (start !== end) {
-          const before = textarea.value.substring(0, start);
-          const after = textarea.value.substring(end);
-          textarea.value = before + after;
-          textarea.setSelectionRange(start, start);
-        } else if (start > 0) {
-          const before = textarea.value.substring(0, start - 1);
-          const after = textarea.value.substring(start);
-          textarea.value = before + after;
-          textarea.setSelectionRange(start - 1, start - 1);
-        }
+      if (key === "back") {
+        deleteAtCursor(textarea);
       }
 
       else if (key === "clear") {
         textarea.value = "";
+        textarea.focus();
       }
 
       else if (key === "enter") {
@@ -430,7 +610,6 @@
         insertAtCursor(textarea, key);
       }
 
-      textarea.focus();
       updateAll();
     }
 
@@ -452,7 +631,7 @@
             placeholder="Tap here, keypad will appear ✨"
           ></textarea>
 
-          <div class="hint">Tap box to open cute keypad 🌸</div>
+          <div class="hint">Tap box to open cute keypad. You can also type using keyboard 🌸</div>
         `;
 
         pagesContainer.appendChild(card);
@@ -460,7 +639,9 @@
         const textarea = document.getElementById("pageInput" + i);
         textarea.value = savedData[i] || "";
 
+        textarea.addEventListener("focus", () => showKeypad(i));
         textarea.addEventListener("click", () => showKeypad(i));
+        textarea.addEventListener("input", updateAll);
 
         textareas.push(textarea);
       }
@@ -477,7 +658,23 @@
       updateAll();
     }
 
+    let lastTouchEnd = 0;
+    document.addEventListener(
+      "touchend",
+      function(event) {
+        const now = Date.now();
+
+        if (now - lastTouchEnd <= 300) {
+          event.preventDefault();
+        }
+
+        lastTouchEnd = now;
+      },
+      { passive: false }
+    );
+
     createPages();
+    loadKeypadSettings();
     updateAll();
   </script>
 </body>
