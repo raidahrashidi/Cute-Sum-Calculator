@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+
   <title>Raeda Cute Calculator</title>
 
   <style>
@@ -98,10 +102,6 @@
       font-weight: bold;
     }
 
-    .textarea-wrap {
-      position: relative;
-    }
-
     textarea {
       width: 100%;
       min-height: 135px;
@@ -114,33 +114,13 @@
       background: #fffafd;
       color: #444;
       line-height: 1.45;
+      caret-color: #d9468c;
     }
 
     textarea:focus,
     textarea.active-input {
       border-color: #d9468c;
       box-shadow: 0 0 0 3px rgba(217, 70, 140, 0.18);
-    }
-
-    .mobile-cursor {
-      display: none;
-      position: absolute;
-      left: 14px;
-      bottom: 16px;
-      width: 2px;
-      height: 20px;
-      background: #d9468c;
-      animation: blink 1s infinite;
-      pointer-events: none;
-    }
-
-    textarea.active-input + .mobile-cursor {
-      display: block;
-    }
-
-    @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
     }
 
     .hint {
@@ -344,7 +324,7 @@
   <div class="app">
     <div class="header">
       <h1>🧮 Cute Sum Calculator</h1>
-      <p>Speciallyy For Nabilah & Najihah ✨</p>
+      <p>For Nabilah & Najihah ✨</p>
     </div>
 
     <div class="grand-card">
@@ -361,13 +341,13 @@
 
     <button class="clear-all" onclick="clearAll()">Clear All 🧹</button>
 
-    <div class="footer">Made with with 🤍 by raeda</div>
+    <div class="footer">crafted with 🤍 by raeda</div>
   </div>
 
   <div class="popup-keypad center" id="popupKeypad">
     <div class="keypad-inner">
       <div class="keypad-top">
-        <span id="activeLabel">Page 1</span>
+        <span id="activeLabel">Now typing: Page 1</span>
         <button class="done-btn" id="doneBtn">Done ✨</button>
       </div>
 
@@ -471,10 +451,12 @@
 
     function showKeypad(index) {
       activePage = index;
-      activeLabel.textContent = "Page " + (index + 1);
+      activeLabel.textContent = "Now typing: Page " + (index + 1);
 
       textareas.forEach(t => t.classList.remove("active-input"));
       textareas[index].classList.add("active-input");
+
+      textareas[index].focus();
 
       if (isMobile) {
         popupKeypad.style.display = "block";
@@ -555,16 +537,45 @@
 
     function pressKey(key) {
       const textarea = textareas[activePage];
+
       if (!textarea) return;
 
+      textarea.focus();
+
+      let start = textarea.selectionStart;
+      let end = textarea.selectionEnd;
+      let value = textarea.value;
+
       if (key === "back") {
-        textarea.value = textarea.value.slice(0, -1);
-      } else if (key === "clear") {
+        if (start === end && start > 0) {
+          textarea.value = value.substring(0, start - 1) + value.substring(end);
+          textarea.selectionStart = textarea.selectionEnd = start - 1;
+        } else {
+          textarea.value = value.substring(0, start) + value.substring(end);
+          textarea.selectionStart = textarea.selectionEnd = start;
+        }
+      }
+
+      else if (key === "clear") {
         textarea.value = "";
-      } else if (key === "enter" || key === "+") {
-        textarea.value += "\n";
-      } else {
-        textarea.value += key;
+        textarea.selectionStart = textarea.selectionEnd = 0;
+      }
+
+      else {
+        let insertText = key;
+
+        if (key === "enter" || key === "+") {
+          insertText = "\n";
+        }
+
+        textarea.value =
+          value.substring(0, start) +
+          insertText +
+          value.substring(end);
+
+        textarea.selectionStart =
+          textarea.selectionEnd =
+          start + insertText.length;
       }
 
       textarea.scrollTop = textarea.scrollHeight;
@@ -584,10 +595,15 @@
             <div class="page-total" id="pageTotal${i}">RM 0.00</div>
           </div>
 
-          <div class="textarea-wrap">
-            <textarea id="pageInput${i}" placeholder="Tap here to enter numbers ✨"></textarea>
-            <span class="mobile-cursor"></span>
-          </div>
+          <textarea
+            id="pageInput${i}"
+            inputmode="${isMobile ? "none" : "decimal"}"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            placeholder="Tap here to enter numbers ✨"
+          ></textarea>
 
           <div class="hint">
             ${isMobile ? "Tap box to open cute keypad 🌸" : "Type using your keyboard 💻"}
@@ -599,16 +615,10 @@
         const textarea = document.getElementById("pageInput" + i);
         textarea.value = savedData[i] || "";
 
-        if (isMobile) {
-          textarea.setAttribute("readonly", true);
-        }
-
         textarea.addEventListener("click", () => showKeypad(i));
         textarea.addEventListener("focus", () => {
-          if (!isMobile) {
-            textareas.forEach(t => t.classList.remove("active-input"));
-            textarea.classList.add("active-input");
-          }
+          textareas.forEach(t => t.classList.remove("active-input"));
+          textarea.classList.add("active-input");
         });
         textarea.addEventListener("input", updateAll);
 
