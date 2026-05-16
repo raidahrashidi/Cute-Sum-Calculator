@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raeda Cute Calculator</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #fff1f7, #f7f3ff);
+      color: #333;
+      padding: 14px;
+    }
+
+    .app {
+      max-width: 480px;
+      margin: auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #d9468c;
+    }
+
+    .header p {
+      font-size: 13px;
+      color: #777;
+    }
+
+    .grand-card {
+      position: sticky;
+      top: 8px;
+      z-index: 10;
+      background: white;
+      border: 2px solid #ffd6e8;
+      border-radius: 20px;
+      padding: 15px;
+      margin-bottom: 15px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(217, 70, 140, 0.15);
+    }
+
+    .grand-label {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .grand-total {
+      font-size: 28px;
+      font-weight: bold;
+      color: #d9468c;
+    }
+
+    .page-card {
+      background: white;
+      border-radius: 20px;
+      padding: 15px;
+      margin-bottom: 14px;
+      border: 1px solid #ffe1ef;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.07);
+    }
+
+    .page-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .page-title h2 {
+      margin: 0;
+      font-size: 17px;
+      color: #9b5de5;
+    }
+
+    .page-total {
+      background: #fce7f3;
+      color: #be185d;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 135px;
+      border: 1.5px solid #f9c5dc;
+      border-radius: 15px;
+      padding: 12px;
+      font-size: 16px;
+      outline: none;
+      resize: vertical;
+      background: #fffafd;
+    }
+
+    textarea:focus {
+      border-color: #ec4899;
+      box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.15);
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #888;
+      margin-top: 7px;
+    }
+
+    .summary {
+      background: white;
+      border-radius: 20px;
+      padding: 15px;
+      margin-top: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.07);
+    }
+
+    .summary h2 {
+      margin: 0 0 10px;
+      color: #d9468c;
+      font-size: 18px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px dashed #ffd6e8;
+      font-size: 14px;
+    }
+
+    .clear-btn {
+      width: 100%;
+      border: none;
+      background: #d9468c;
+      color: white;
+      padding: 14px;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 13px;
+      color: #b47b93;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app">
+    <div class="header">
+      <h1>🧮 Cute Sum Calculator</h1>
+      <p>Specially for Nabilah & Najihah ✨</p>
+    </div>
+
+    <div class="grand-card">
+      <div class="grand-label">Grand Total</div>
+      <div class="grand-total" id="grandTotal">RM 0.00</div>
+    </div>
+
+    <div id="pages"></div>
+
+    <div class="summary">
+      <h2>📌 Page Summary</h2>
+      <div id="summaryList"></div>
+    </div>
+
+    <button class="clear-btn" onclick="clearAll()">Clear All</button>
+
+    <div class="footer">✨ Made with love by Raeda ✨</div>
+  </div>
+
+  <script>
+    const pagesContainer = document.getElementById("pages");
+    const summaryList = document.getElementById("summaryList");
+    const grandTotal = document.getElementById("grandTotal");
+
+    let pageTotals = [0, 0, 0, 0, 0, 0];
+    let textareas = [];
+
+    function calculateText(text) {
+      text = text.replace(/,/g, "");
+
+      const numbers = text.match(/-?\d+(\.\d+)?/g);
+
+      if (numbers === null) {
+        return 0;
+      }
+
+      let total = 0;
+
+      numbers.forEach(function(num) {
+        total += Number(num);
+      });
+
+      return total;
+    }
+
+    function formatRM(value) {
+      return "RM " + value.toLocaleString("en-MY", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function updateAll() {
+      let grand = 0;
+      summaryList.innerHTML = "";
+
+      for (let i = 0; i < 6; i++) {
+        grand += pageTotals[i];
+
+        const row = document.createElement("div");
+        row.className = "summary-row";
+        row.innerHTML = `
+          <span>Page ${i + 1}</span>
+          <strong>${formatRM(pageTotals[i])}</strong>
+        `;
+        summaryList.appendChild(row);
+      }
+
+      grandTotal.innerText = formatRM(grand);
+    }
+
+    function createPages() {
+      for (let i = 0; i < 6; i++) {
+        const card = document.createElement("div");
+        card.className = "page-card";
+
+        card.innerHTML = `
+          <div class="page-title">
+            <h2>Page ${i + 1}</h2>
+            <div class="page-total" id="pageTotal${i}">RM 0.00</div>
+          </div>
+
+          <textarea id="pageInput${i}" placeholder="Example:
+100
+200
+-50"></textarea>
+
+          <div class="hint">Use - before number to subtract. Example: -50</div>
+        `;
+
+        pagesContainer.appendChild(card);
+
+        const textarea = document.getElementById("pageInput" + i);
+        const pageTotal = document.getElementById("pageTotal" + i);
+
+        textareas.push(textarea);
+
+        textarea.addEventListener("input", function() {
+          const total = calculateText(textarea.value);
+          pageTotals[i] = total;
+          pageTotal.innerText = formatRM(total);
+          updateAll();
+        });
+      }
+    }
+
+    function clearAll() {
+      for (let i = 0; i < 6; i++) {
+        textareas[i].value = "";
+        pageTotals[i] = 0;
+        document.getElementById("pageTotal" + i).innerText = "RM 0.00";
+      }
+
+      updateAll();
+    }
+
+    createPages();
+    updateAll();
+  </script>
+
+</body>
+</html>
