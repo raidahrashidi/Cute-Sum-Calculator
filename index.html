@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
@@ -26,7 +25,7 @@
       background: linear-gradient(180deg, #fff1f7, #f7f3ff);
       color: #333;
       padding: 14px;
-      padding-bottom: 285px;
+      padding-bottom: 300px;
     }
 
     .app {
@@ -203,10 +202,6 @@
       transition: 0.2s ease;
     }
 
-    .popup-keypad.small .keypad-inner {
-      max-width: 335px;
-    }
-
     .popup-keypad.left .keypad-inner {
       margin-left: 0;
       margin-right: auto;
@@ -220,6 +215,48 @@
     .popup-keypad.right .keypad-inner {
       margin-left: auto;
       margin-right: 0;
+    }
+
+    /* SMALL MODE: same normal layout, just smaller */
+    .popup-keypad.small {
+      padding: 10px;
+    }
+
+    .popup-keypad.small .keypad-inner {
+      width: 50vw;
+      max-width: 260px;
+      min-width: 220px;
+    }
+
+    .popup-keypad.small .keypad-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .popup-keypad.small .keypad-controls {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+    }
+
+    .popup-keypad.small .key {
+      padding: 9px 0;
+      font-size: 15px;
+      border-radius: 12px;
+    }
+
+    .popup-keypad.small .keypad-controls button {
+      padding: 6px 2px;
+      font-size: 10px;
+    }
+
+    .popup-keypad.small .keypad-top {
+      margin-bottom: 7px;
+      font-size: 12px;
+    }
+
+    .popup-keypad.small .done-btn {
+      padding: 6px 10px;
+      font-size: 12px;
     }
 
     .keypad-top {
@@ -282,12 +319,6 @@
       box-shadow: 0 4px 9px rgba(217, 70, 140, 0.14);
       cursor: pointer;
       user-select: none;
-    }
-
-    .popup-keypad.small .key {
-      padding: 12px 0;
-      font-size: 18px;
-      border-radius: 15px;
     }
 
     .key:active,
@@ -392,6 +423,8 @@
     let textareas = [];
     let keypadSmall = false;
 
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
     function saveData() {
       const data = textareas.map(t => t.value);
       localStorage.setItem("raedaCalculatorData", JSON.stringify(data));
@@ -446,7 +479,6 @@
     function calculateText(text) {
       text = text.replace(/,/g, "");
       const numbers = text.match(/-?\d+(\.\d+)?/g);
-
       if (!numbers) return 0;
 
       return numbers.reduce((sum, num) => sum + Number(num), 0);
@@ -492,9 +524,11 @@
 
       popupKeypad.classList.add("show");
 
-      setTimeout(() => {
-        textareas[index].focus();
-      }, 50);
+      if (!isMobile) {
+        setTimeout(() => {
+          textareas[index].focus();
+        }, 50);
+      }
     }
 
     function hideKeypad() {
@@ -534,8 +568,7 @@
 
     function keepFocus() {
       const textarea = textareas[activePage];
-
-      if (!textarea) return;
+      if (!textarea || isMobile) return;
 
       const pos = textarea.selectionStart;
 
@@ -546,10 +579,10 @@
     }
 
     function insertAtCursor(textarea, text) {
-      textarea.focus();
+      if (!isMobile) textarea.focus();
 
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
+      let start = textarea.selectionStart || textarea.value.length;
+      let end = textarea.selectionEnd || textarea.value.length;
 
       const before = textarea.value.substring(0, start);
       const after = textarea.value.substring(end);
@@ -557,56 +590,52 @@
       textarea.value = before + text + after;
 
       const newPosition = start + text.length;
-      textarea.focus();
-      textarea.setSelectionRange(newPosition, newPosition);
+
+      textarea.selectionStart = newPosition;
+      textarea.selectionEnd = newPosition;
+
+      if (!isMobile) {
+        textarea.focus();
+        textarea.setSelectionRange(newPosition, newPosition);
+      }
     }
 
     function deleteAtCursor(textarea) {
-      textarea.focus();
+      if (!isMobile) textarea.focus();
 
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
+      let start = textarea.selectionStart || textarea.value.length;
+      let end = textarea.selectionEnd || textarea.value.length;
 
       if (start !== end) {
         const before = textarea.value.substring(0, start);
         const after = textarea.value.substring(end);
 
         textarea.value = before + after;
-        textarea.focus();
-        textarea.setSelectionRange(start, start);
+        textarea.selectionStart = start;
+        textarea.selectionEnd = start;
       } else if (start > 0) {
         const before = textarea.value.substring(0, start - 1);
         const after = textarea.value.substring(start);
 
         textarea.value = before + after;
-        textarea.focus();
-        textarea.setSelectionRange(start - 1, start - 1);
+        textarea.selectionStart = start - 1;
+        textarea.selectionEnd = start - 1;
       }
     }
 
     function pressKey(key) {
       const textarea = textareas[activePage];
-
       if (!textarea) return;
 
       if (key === "back") {
         deleteAtCursor(textarea);
-      }
-
-      else if (key === "clear") {
+      } else if (key === "clear") {
         textarea.value = "";
-        textarea.focus();
-      }
-
-      else if (key === "enter") {
+      } else if (key === "enter") {
         insertAtCursor(textarea, "\n");
-      }
-
-      else if (key === "+") {
+      } else if (key === "+") {
         insertAtCursor(textarea, "\n");
-      }
-
-      else {
+      } else {
         insertAtCursor(textarea, key);
       }
 
@@ -631,7 +660,7 @@
             placeholder="Tap here, keypad will appear ✨"
           ></textarea>
 
-          <div class="hint">Tap box to open cute keypad. You can also type using keyboard 🌸</div>
+          <div class="hint">Tap box to open cute keypad. Laptop can type using keyboard 🌸</div>
         `;
 
         pagesContainer.appendChild(card);
@@ -639,7 +668,10 @@
         const textarea = document.getElementById("pageInput" + i);
         textarea.value = savedData[i] || "";
 
-        textarea.addEventListener("focus", () => showKeypad(i));
+        if (isMobile) {
+          textarea.setAttribute("readonly", true);
+        }
+
         textarea.addEventListener("click", () => showKeypad(i));
         textarea.addEventListener("input", updateAll);
 
@@ -659,6 +691,7 @@
     }
 
     let lastTouchEnd = 0;
+
     document.addEventListener(
       "touchend",
       function(event) {
