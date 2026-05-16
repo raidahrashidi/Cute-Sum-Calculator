@@ -14,6 +14,7 @@
       background: linear-gradient(180deg, #fff1f7, #f7f3ff);
       color: #333;
       padding: 14px;
+      padding-bottom: 260px;
     }
 
     .app {
@@ -28,13 +29,14 @@
 
     .header h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 25px;
       color: #d9468c;
     }
 
     .header p {
       font-size: 13px;
-      color: #777;
+      color: #9b6b86;
+      margin-top: 6px;
     }
 
     .grand-card {
@@ -43,31 +45,32 @@
       z-index: 10;
       background: white;
       border: 2px solid #ffd6e8;
-      border-radius: 20px;
+      border-radius: 22px;
       padding: 15px;
       margin-bottom: 15px;
       text-align: center;
-      box-shadow: 0 8px 20px rgba(217, 70, 140, 0.15);
+      box-shadow: 0 8px 20px rgba(217, 70, 140, 0.18);
     }
 
     .grand-label {
       font-size: 13px;
-      color: #888;
+      color: #999;
     }
 
     .grand-total {
-      font-size: 28px;
+      font-size: 30px;
       font-weight: bold;
       color: #d9468c;
+      margin-top: 4px;
     }
 
     .page-card {
       background: white;
-      border-radius: 20px;
+      border-radius: 22px;
       padding: 15px;
       margin-bottom: 14px;
       border: 1px solid #ffe1ef;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.07);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.07);
     }
 
     .page-title {
@@ -86,7 +89,7 @@
     .page-total {
       background: #fce7f3;
       color: #be185d;
-      padding: 7px 10px;
+      padding: 7px 11px;
       border-radius: 999px;
       font-size: 13px;
       font-weight: bold;
@@ -96,12 +99,13 @@
       width: 100%;
       min-height: 135px;
       border: 1.5px solid #f9c5dc;
-      border-radius: 15px;
+      border-radius: 16px;
       padding: 12px;
-      font-size: 16px;
+      font-size: 17px;
       outline: none;
       resize: vertical;
       background: #fffafd;
+      color: #444;
     }
 
     textarea:focus {
@@ -111,13 +115,14 @@
 
     .hint {
       font-size: 12px;
-      color: #888;
-      margin-top: 7px;
+      color: #999;
+      margin-top: 8px;
+      text-align: center;
     }
 
     .summary {
       background: white;
-      border-radius: 20px;
+      border-radius: 22px;
       padding: 15px;
       margin-top: 18px;
       margin-bottom: 14px;
@@ -138,13 +143,13 @@
       font-size: 14px;
     }
 
-    .clear-btn {
+    .clear-all {
       width: 100%;
       border: none;
       background: #d9468c;
       color: white;
       padding: 14px;
-      border-radius: 16px;
+      border-radius: 18px;
       font-size: 16px;
       font-weight: bold;
       margin-bottom: 12px;
@@ -156,15 +161,100 @@
       color: #b47b93;
       margin-bottom: 20px;
     }
+
+    .popup-keypad {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -8px 25px rgba(0,0,0,0.16);
+      padding: 14px;
+      z-index: 999;
+      transform: translateY(110%);
+      transition: 0.25s ease;
+      border-top: 2px solid #ffd6e8;
+    }
+
+    .popup-keypad.show {
+      transform: translateY(0);
+    }
+
+    .keypad-inner {
+      max-width: 480px;
+      margin: auto;
+    }
+
+    .keypad-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      color: #be185d;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .done-btn {
+      border: none;
+      background: #fce7f3;
+      color: #be185d;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-weight: bold;
+    }
+
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+    }
+
+    .key {
+      border: none;
+      border-radius: 17px;
+      padding: 15px 0;
+      font-size: 20px;
+      font-weight: bold;
+      background: #ffe4f1;
+      color: #be185d;
+      box-shadow: 0 4px 9px rgba(217, 70, 140, 0.14);
+    }
+
+    .key:active {
+      transform: scale(0.96);
+      background: #fbcfe8;
+    }
+
+    .key.special {
+      background: #eee7ff;
+      color: #7c3aed;
+    }
+
+    .key.minus {
+      background: #fff3c4;
+      color: #a16207;
+    }
+
+    .key.enter {
+      background: #d9468c;
+      color: white;
+    }
+
+    .key.clear {
+      background: #fee2e2;
+      color: #dc2626;
+    }
   </style>
 </head>
 
 <body>
-
   <div class="app">
+
     <div class="header">
       <h1>🧮 Cute Sum Calculator</h1>
-      <p>Specially for Nabilah & Najihah ✨</p>
+      <p>For Nabilah & Najihah ✨</p>
     </div>
 
     <div class="grand-card">
@@ -179,35 +269,75 @@
       <div id="summaryList"></div>
     </div>
 
-    <button class="clear-btn" onclick="clearAll()">Clear All</button>
+    <button class="clear-all" onclick="clearAll()">Clear All 🧹</button>
 
-    <div class="footer">✨ Made with love by Raeda ✨</div>
+    <div class="footer">crafted with 🤍 by raeda</div>
+
+  </div>
+
+  <div class="popup-keypad" id="popupKeypad">
+    <div class="keypad-inner">
+      <div class="keypad-top">
+        <span id="activeLabel">Page 1</span>
+        <button class="done-btn" onclick="hideKeypad()">Done ✨</button>
+      </div>
+
+      <div class="keypad-grid">
+        <button class="key" onclick="pressKey('1')">1</button>
+        <button class="key" onclick="pressKey('2')">2</button>
+        <button class="key" onclick="pressKey('3')">3</button>
+        <button class="key special" onclick="pressKey('back')">⌫</button>
+
+        <button class="key" onclick="pressKey('4')">4</button>
+        <button class="key" onclick="pressKey('5')">5</button>
+        <button class="key" onclick="pressKey('6')">6</button>
+        <button class="key minus" onclick="pressKey('-')">−</button>
+
+        <button class="key" onclick="pressKey('7')">7</button>
+        <button class="key" onclick="pressKey('8')">8</button>
+        <button class="key" onclick="pressKey('9')">9</button>
+        <button class="key special" onclick="pressKey('.')">.</button>
+
+        <button class="key clear" onclick="pressKey('clear')">Clear</button>
+        <button class="key" onclick="pressKey('0')">0</button>
+        <button class="key enter" onclick="pressKey('enter')">Enter</button>
+        <button class="key special" onclick="pressKey('+')">+</button>
+      </div>
+    </div>
   </div>
 
   <script>
     const pagesContainer = document.getElementById("pages");
     const summaryList = document.getElementById("summaryList");
     const grandTotal = document.getElementById("grandTotal");
+    const popupKeypad = document.getElementById("popupKeypad");
+    const activeLabel = document.getElementById("activeLabel");
 
-    let pageTotals = [0, 0, 0, 0, 0, 0];
+    let activePage = 0;
     let textareas = [];
+
+    function saveData() {
+      const data = textareas.map(t => t.value);
+      localStorage.setItem("raedaCalculatorData", JSON.stringify(data));
+    }
+
+    function loadData() {
+      const saved = localStorage.getItem("raedaCalculatorData");
+      if (!saved) return Array(6).fill("");
+      try {
+        const data = JSON.parse(saved);
+        return Array.isArray(data) ? data : Array(6).fill("");
+      } catch {
+        return Array(6).fill("");
+      }
+    }
 
     function calculateText(text) {
       text = text.replace(/,/g, "");
-
       const numbers = text.match(/-?\d+(\.\d+)?/g);
+      if (!numbers) return 0;
 
-      if (numbers === null) {
-        return 0;
-      }
-
-      let total = 0;
-
-      numbers.forEach(function(num) {
-        total += Number(num);
-      });
-
-      return total;
+      return numbers.reduce((sum, num) => sum + Number(num), 0);
     }
 
     function formatRM(value) {
@@ -222,21 +352,91 @@
       summaryList.innerHTML = "";
 
       for (let i = 0; i < 6; i++) {
-        grand += pageTotals[i];
+        const total = calculateText(textareas[i].value);
+        grand += total;
+
+        document.getElementById("pageTotal" + i).textContent = formatRM(total);
 
         const row = document.createElement("div");
         row.className = "summary-row";
         row.innerHTML = `
           <span>Page ${i + 1}</span>
-          <strong>${formatRM(pageTotals[i])}</strong>
+          <strong>${formatRM(total)}</strong>
         `;
         summaryList.appendChild(row);
       }
 
-      grandTotal.innerText = formatRM(grand);
+      grandTotal.textContent = formatRM(grand);
+      saveData();
+    }
+
+    function showKeypad(index) {
+      activePage = index;
+      activeLabel.textContent = "Page " + (index + 1);
+      popupKeypad.classList.add("show");
+      textareas[index].focus();
+    }
+
+    function hideKeypad() {
+      popupKeypad.classList.remove("show");
+      if (textareas[activePage]) textareas[activePage].blur();
+    }
+
+    function insertAtCursor(textarea, text) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const before = textarea.value.substring(0, start);
+      const after = textarea.value.substring(end);
+
+      textarea.value = before + text + after;
+
+      const newPosition = start + text.length;
+      textarea.setSelectionRange(newPosition, newPosition);
+    }
+
+    function pressKey(key) {
+      const textarea = textareas[activePage];
+
+      if (key === "back") {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+
+        if (start !== end) {
+          const before = textarea.value.substring(0, start);
+          const after = textarea.value.substring(end);
+          textarea.value = before + after;
+          textarea.setSelectionRange(start, start);
+        } else if (start > 0) {
+          const before = textarea.value.substring(0, start - 1);
+          const after = textarea.value.substring(start);
+          textarea.value = before + after;
+          textarea.setSelectionRange(start - 1, start - 1);
+        }
+      }
+
+      else if (key === "clear") {
+        textarea.value = "";
+      }
+
+      else if (key === "enter") {
+        insertAtCursor(textarea, "\n");
+      }
+
+      else if (key === "+") {
+        insertAtCursor(textarea, "\n");
+      }
+
+      else {
+        insertAtCursor(textarea, key);
+      }
+
+      textarea.focus();
+      updateAll();
     }
 
     function createPages() {
+      const savedData = loadData();
+
       for (let i = 0; i < 6; i++) {
         const card = document.createElement("div");
         card.className = "page-card";
@@ -247,43 +447,40 @@
             <div class="page-total" id="pageTotal${i}">RM 0.00</div>
           </div>
 
-          <textarea id="pageInput${i}" placeholder="Example:
-100
-200
--50"></textarea>
+          <textarea
+            id="pageInput${i}"
+            readonly
+            placeholder="Tap here, keypad will appear ✨"
+          ></textarea>
 
-          <div class="hint">Use - before number to subtract. Example: -50</div>
+          <div class="hint">Tap box to open cute keypad 🌸</div>
         `;
 
         pagesContainer.appendChild(card);
 
         const textarea = document.getElementById("pageInput" + i);
-        const pageTotal = document.getElementById("pageTotal" + i);
+        textarea.value = savedData[i] || "";
+
+        textarea.addEventListener("click", () => showKeypad(i));
+        textarea.addEventListener("focus", () => showKeypad(i));
 
         textareas.push(textarea);
-
-        textarea.addEventListener("input", function() {
-          const total = calculateText(textarea.value);
-          pageTotals[i] = total;
-          pageTotal.innerText = formatRM(total);
-          updateAll();
-        });
       }
     }
 
     function clearAll() {
+      if (!confirm("Clear all data?")) return;
+
       for (let i = 0; i < 6; i++) {
         textareas[i].value = "";
-        pageTotals[i] = 0;
-        document.getElementById("pageTotal" + i).innerText = "RM 0.00";
       }
 
+      localStorage.removeItem("raedaCalculatorData");
       updateAll();
     }
 
     createPages();
     updateAll();
   </script>
-
 </body>
 </html>
