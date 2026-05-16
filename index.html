@@ -449,7 +449,6 @@
 
           <textarea
             id="pageInput${i}"
-            readonly
             placeholder="Tap here, keypad will appear ✨"
           ></textarea>
 
@@ -462,7 +461,6 @@
         textarea.value = savedData[i] || "";
 
         textarea.addEventListener("click", () => showKeypad(i));
-        textarea.addEventListener("focus", () => showKeypad(i));
 
         textareas.push(textarea);
       }
